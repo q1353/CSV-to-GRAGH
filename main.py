@@ -64,45 +64,47 @@ df["DewPoint"] = np.array(_dewpoint)
 #最新Pandasデータを確認
 print(df)
 
-fig, ax1 = plt.subplots()
-
-sns.set(style="darkgrid")
-
-"""
-sns.set_style("whitegrid", {'grid.linestyle': '--'})
-sns.set_context("paper", 1.5, {"lines.linewidth": 4})
-sns.set_palette("winter_r", 8, 1)
-sns.set('talk', 'whitegrid', 'dark', font_scale=1.5, rc={"lines.linewidth": 2, 'grid.linestyle': '--'})
-"""
+fig, ax = plt.subplots(1, 3)
 
 color1 = 'tab:red'
 color2 = 'tab:blue'
-ax1.plot(df.iloc[:, [0]], color = color1, label='Temp')
-ax1.plot(df.iloc[:, [1]], color = color2, label='R.Hum')
-ax1.set_xlabel('Date/Time')
-ax1.set_ylabel('Temp&R.Hum')
-ax1.set_ylim(0,100)
-ax1.grid()
-
-ax2 =ax1.twinx()
-
 color3 = 'tab:Green'
-ax2.plot(df.iloc[:, [2]], color = color3, label='A.Hum')
-ax2.set_ylabel('A.Hum')
-ax2.set_ylim(0,0.01)
-ax2.yaxis.set_major_formatter(ptick.ScalarFormatter(useMathText=True))
-ax2.ticklabel_format(style='sci',axis='y',scilimits=(0,0))
 
+
+ax[0].plot(df.iloc[:, [0]], color = color1, label='Temp')
+ax[0].plot(df.iloc[:, [1]], color = color2, label='R.Hum')
+ax[0].set_xlabel('Date/Time')
+ax[0].set_ylabel('Temp&R.Hum')
+ax[0].set_ylim(0,100)
+ax[0].grid()
+ax[0].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+
+ax[1].plot(df.iloc[:, [2]], color = color3, label='A.Hum')
+ax[1].set_xlabel('Date/Time')
+ax[1].set_ylabel('A.Hum')
+ax[1].set_ylim(0,0.01)
+ax[1].grid()
+ax[1].ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+ax[1].yaxis.set_major_formatter(ptick.ScalarFormatter(useMathText=True))
+ax[1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+
+ax[2].plot(df.iloc[:, [3]], color = color1, label='Enthalpy')
+ax[2].set_xlabel('Date/Time')
+ax[2].set_ylabel('Enthalpy')
+ax[2].set_ylim(0,100)
+ax[2].grid()
+ax[2].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+
+"""
 fig.tight_layout()
-
+"""
+"""
 handler1, label1 = ax1.get_legend_handles_labels()
 handler2, label2 = ax2.get_legend_handles_labels()
 
 ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
+"""
 
-ax1.xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
-
-plt.title('Temp&Humidity')
 plt.style.use('ggplot') 
 plt.show()
 
