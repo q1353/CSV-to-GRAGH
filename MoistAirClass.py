@@ -32,7 +32,7 @@ class MoistAir():
 
 
     def __init__(self, dryBulbTemperature = 24, relativeHumidity = 45):
-        #self.AtmosphericPressure = atmosphericPressure
+        self.AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
         self.DryBulbTemperature = dryBulbTemperature
         self.RelativeHumidity = relativeHumidity
         #self.HumidityRatio = MoistAir.GetHumidityRatioFromDryBulbTemperatureAndRelativeHumidity(dryBulbTemperature, relativeHumidity, MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL)
@@ -67,7 +67,7 @@ class MoistAir():
     #<returns>絶対湿度[kg/kg]</returns>
 
     def GetHumidityRatioFromWaterVaporPartialPressure(WaterVaporPartialPressure):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL 
+        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
         return 0.62198 * WaterVaporPartialPressure / (AtmosphericPressure - WaterVaporPartialPressure)
         
     #<summary>絶対湿度[kg/kg]と大気圧[kPa]から水蒸気分圧[kPa]を求める</summary>
@@ -86,7 +86,7 @@ class MoistAir():
     #<returns>絶対湿度[kg/kg]</returns>
 
     def GetHumidityRatioFromDryBulbTemperatureAndRelativeHumidity(self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         #飽和水蒸気分圧[kPa]の計算
         ps = Water.GetSaturationPressure(self.DryBulbTemperature)
         #水蒸気分圧[kPa]の計算
@@ -99,7 +99,7 @@ class MoistAir():
     # <param name="atmosphericPressure">大気圧[kPa]</param>
 
     def GetEnthalpyFromHumidityRatioAndRelativeHumidity(self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         #乾球温度[℃]と相対湿度[%]から絶対湿度[kg/kg]を求める
         hrt = MoistAir.GetHumidityRatioFromDryBulbTemperatureAndRelativeHumidity(self)
         #水蒸気分圧[kPa]の計算
@@ -119,7 +119,7 @@ class MoistAir():
     # <param name="atmosphericPressure">大気圧[kPa]</param>
     # <returns>比体積[m3/kg]</returns>
     def GetSpecificVolumeFromDryBulbTemperatureAndHumidityRatio(self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         hrt = MoistAir.GetHumidityRatioFromDryBulbTemperatureAndRelativeHumidity(self)
         return ((self.DryBulbTemperature + MoistAir.CONVERT_C_TO_K) * MoistAir.DRYAIR_GAS_CONSTANT) / AtmosphericPressure * (1.0 + 1.6078 * hrt)
     
@@ -128,7 +128,7 @@ class MoistAir():
     # <param name="atmosphericPressure">大気圧[kPa]</param>
     # <returns>飽和乾球温度（露点温度）[℃]</returns>
     def GetSaturationDryBulbTemperatureFromHumidityRatio(self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         hrt = MoistAir.GetHumidityRatioFromDryBulbTemperatureAndRelativeHumidity(self)
         ps = MoistAir.GetWaterVaporPartialPressureFromHumidityRatio(hrt)
         return Water.GetSaturationTemperature(ps)
@@ -158,7 +158,7 @@ class MoistAir():
     # <param name="atmosphericPressure">大気圧[kPa]</param>
     # <returns>動粘性係数[m2/s]</returns>
     def GetDynamicViscosity(self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         return MoistAir.GetSpecificVolumeFromDryBulbTemperatureAndHumidityRatio(self) * MoistAir.GetViscosity(self)
 
 
@@ -180,7 +180,7 @@ class MoistAir():
     # <param name="atmosphericPressure">大気圧[kPa]</param>
     # <returns>熱拡散率[m2/s]</returns>
     def GetThermalDiffusivity (self):
-        AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
+        AtmosphericPressure = self.AtmosphericPressure
         lam = MoistAir.GetThermalConductivity(self)
         cp = MoistAir.GetSpecificHeat(self)
         sv = MoistAir.GetSpecificVolumeFromDryBulbTemperatureAndHumidityRatio(self)
