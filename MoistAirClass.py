@@ -183,5 +183,5 @@ class MoistAir():
         AtmosphericPressure = MoistAir.ATMOSPHERIC_PRESSURE_AT_SEALEVEL
         lam = MoistAir.GetThermalConductivity(self)
         cp = MoistAir.GetSpecificHeat(self)
-        rho = MoistAir.GetSpecificVolumeFromDryBulbTemperatureAndHumidityRatio(self)
-        return lam / (1000 * cp * rho)
+        sv = MoistAir.GetSpecificVolumeFromDryBulbTemperatureAndHumidityRatio(self)
+        return (lam * sv ) / (1000 * cp )
