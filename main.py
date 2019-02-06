@@ -12,7 +12,7 @@ from WaterClass import Water
 from MoistAirClass import MoistAir
 
 #data instance
-df = pd.read_csv('test.csv')
+df = pd.read_csv('test_2.csv')
 
 #int型 ⇒ string型変換
 df['year'] = df['year'] .astype(str)
@@ -67,7 +67,7 @@ df["DewPoint"] = np.array(_dewpoint)
 df["SpecificVolume"] = np.array(_specificvolume)
 
 #最新Pandasデータを確認（頭5行のみ）
-print(df.head())
+print(_ahum)
 
 #グラフ表示数　縦
 v = 2

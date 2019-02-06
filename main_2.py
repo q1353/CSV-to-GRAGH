@@ -169,9 +169,14 @@ while z < int(x_count/2):
         a7 = a7.transpose()
         a8 = a8.transpose()
  
-        print(a1)
-        print(a2)
-        print(a3)
+        a1 = a1.flatten()
+        a2 = a2.flatten()
+        a3 = a3.flatten()
+        a4 = a4.flatten()
+        a5 = a5.flatten()
+        a6 = a6.flatten()
+        a7 = a7.flatten()
+        a8 = a8.flatten()
         
         df["A.hum"] = np.array(a1)
         df["Enthalpy"] = np.array(a2)
@@ -187,7 +192,7 @@ while z < int(x_count/2):
     z += 1
 
 #最新Pandasデータを確認（頭5行のみ）
-print(df)
+print(df["A.hum"])
 
 #df.to_csv("sample.csv")
 
