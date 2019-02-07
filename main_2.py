@@ -140,6 +140,7 @@ print(inst_t_state_array)
 #カウンタの初期化
 i = 0
 z = 0
+s = 0 #各状態量数
 
 #a= inst_t_state_array[z:(z+1),:,0:(i+1)]
 #print(a)
@@ -151,24 +152,28 @@ while z < int(x_count/2):
 
     while i < int(y_count):
 
-        a1 = inst_t_state_array[z:(z+1),:,0:(0+1)]
-        a2 = inst_t_state_array[z:(z+1),:,1:(1+1)]
-        a3 = inst_t_state_array[z:(z+1),:,2:(2+1)]
-        a4 = inst_t_state_array[z:(z+1),:,3:(3+1)]
-        a5 = inst_t_state_array[z:(z+1),:,4:(4+1)]
-        a6 = inst_t_state_array[z:(z+1),:,5:(5+1)]
-        a7 = inst_t_state_array[z:(z+1),:,6:(6+1)]
-        a8 = inst_t_state_array[z:(z+1),:,7:(7+1)]
+        #3次元データフレームから必要要素の列を抽出し、変数へ代入（各状態量を抽出、格納）
+        a0 = inst_t_state_array[z:(z+1),:,0:(0+1)]
+        a1 = inst_t_state_array[z:(z+1),:,1:(1+1)]
+        a2 = inst_t_state_array[z:(z+1),:,2:(2+1)]
+        a3 = inst_t_state_array[z:(z+1),:,3:(3+1)]
+        a4 = inst_t_state_array[z:(z+1),:,4:(4+1)]
+        a5 = inst_t_state_array[z:(z+1),:,5:(5+1)]
+        a6 = inst_t_state_array[z:(z+1),:,6:(6+1)]
+        a7 = inst_t_state_array[z:(z+1),:,7:(7+1)]
 
+        #列データを行データに変換
+        a0 = a0.transpose((0,2,1))
         a1 = a1.transpose((0,2,1))
-        a2 = a2.transpose()
-        a3 = a3.transpose()
-        a4 = a4.transpose()
-        a5 = a5.transpose()
-        a6 = a6.transpose()
-        a7 = a7.transpose()
-        a8 = a8.transpose()
- 
+        a2 = a2.transpose((0,2,1))
+        a3 = a3.transpose((0,2,1))
+        a4 = a4.transpose((0,2,1))
+        a5 = a5.transpose((0,2,1))
+        a6 = a6.transpose((0,2,1))
+        a7 = a7.transpose((0,2,1))
+        
+        #3次元データフレームを1次元データフレームへ変換
+        a0 = a0.flatten()
         a1 = a1.flatten()
         a2 = a2.flatten()
         a3 = a3.flatten()
@@ -176,63 +181,117 @@ while z < int(x_count/2):
         a5 = a5.flatten()
         a6 = a6.flatten()
         a7 = a7.flatten()
-        a8 = a8.flatten()
         
-        df["A.hum"] = np.array(a1)
-        df["Enthalpy"] = np.array(a2)
-        df["DewPoint"] = np.array(a3)
-        df["SpecificVolume"] = np.array(a4)
-        df["THCap"] = np.array(a5)
-        df["SHCapa"] = np.array(a6)
-        df["LHCapa"] = np.array(a7)
-        df["Water"] = np.array(a8)
+        #pandas DataFlame df にNumpyData inst_t_state_arrayデータ抽出し代入
+        df["A.hum"+str(z)] = np.array(a0)
+        df["Enthalpy"+str(z)] = np.array(a1)
+        df["DewPoint"+str(z)] = np.array(a2)
+        df["SpecificVolume"+str(z)] = np.array(a3)
+        df["THCapa"+str(z)] = np.array(a4)
+        df["SHCapa"+str(z)] = np.array(a5)
+        df["LHCapa"+str(z)] = np.array(a6)
+        df["WaterMass"+str(z)] = np.array(a7)
 
         i += 1
 
     z += 1
 
-#最新Pandasデータを確認（頭5行のみ）
-print(df["A.hum"])
+#交換熱量列の追加
+df["d-TH_0-1"] = df.THCapa0-df.THCapa1
+df["d-SH_0-1"] = df.SHCapa0-df.SHCapa1
+df["d-LH_0-1"] = df.LHCapa0-df.LHCapa1
+df["d-W_0-1"] = df.WaterMass0-df.WaterMass1
+df["d-TH_1-2"] = df.THCapa1-df.THCapa2
+df["d-SH_1-2"] = df.SHCapa1-df.SHCapa2
+df["d-LH_1-2"] = df.LHCapa1-df.LHCapa2
+df["d-W_1-2"] = df.WaterMass1-df.WaterMass2
 
+
+#最新Pandasデータを確認（頭5行のみ）
+print(df.head())
+
+#最新PndasデータをCSV形式で出力
 #df.to_csv("sample.csv")
 
-
+#グラフ fig インスタンス生成（状態量グラフ）
+fig_state = plt.figure(figsize=(15,12))
 #グラフ表示数　縦
-v = 2
+v_state = 2
 #グラフ表示数　横
-h = 3
+h_state = 3
+# グラフ番号（プロット番号）カウント
+plotnumber_state = v_state * h_state
+#ax_heatオブジェクト保持用list
+ax_state = []
 
- # グラフ番号（プロット番号）カウント
-plotnumber = v * h
-
-#axオブジェクト保持用Numpy array
-ax = []
-
-#グラフ fig インスタンス生成
-fig = plt.figure(figsize=(15,12))
+#グラフ fig インスタンス生成（交換熱量グラフ）
+fig_heat = plt.figure(figsize=(15,13))
+#グラフ表示数　縦
+v_heat = 8
+#グラフ表示数　横
+h_heat = 1
+# グラフ番号（プロット番号）カウント
+plotnumber_heat = v_heat * h_heat
+#ax_heatオブジェクト保持用list
+ax_heat = []
 
 #seabornデフォルトスタイルを適用
 sns.set()
+
+#全体共通書式設定
+"""
+#y軸の文字サイズ変更
+plt.tick_params(axis='y', which='major', labelsize=10)
+#x軸の文字サイズ変更
+plt.tick_params(axis='x', which='major', labelsize=10)
+"""
 
 #使用できる色の設定
 color1 = 'tab:red'
 color2 = 'tab:blue'
 color3 = 'tab:Green'
 
-for i in range(1, plotnumber+1): # 1から始まり、plotnunber+1まで処理する
-    ax = np.append(ax,fig.add_subplot(v,h,i)) # AXESをfigへ追加(v,h)&順序i ⇒ この配列情報ax arrayに追加
+#カウンタ初期化
+i_s = 1
+
+#状態量グラフの描画と書式設定
+for i_s in range(1, plotnumber_state+1): # 1から始まり、plotnunber_state+1まで処理する
+    ax_state = np.append(ax_state,fig_state.add_subplot(v_state,h_state,i_s)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報_state list型に追加
             
-    ax[i-1].plot(df.iloc[:, [i-1]], color = color1, label=df.columns.values[i-1])
-    ax[i-1].set_xlabel('Date/Time')
-    ax[i-1].set_ylabel(df.columns.values[i-1])
-    #ax[i-1].grid() #seabornデフォルトスタイルを適用時はOFF
-    ax[i-1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
-    #ax[i-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
+    ax_state[i_s-1].plot(df.iloc[:, [i_s-1]], color = color1, label=df.columns.values[i_s-1])
+    ax_state[i_s-1].set_xlabel('Date/Time')
+    ax_state[i_s-1].set_ylabel(df.columns.values[i_s-1])
+    #ax_state[i_s-1].grid() #seabornデフォルトスタイルを適用時はOFF
+    ax_state[i_s-1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+    #ax_state[i_s-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
+
+    
+#カウンタ初期化
+i_h = 1
+
+#交換熱量等　状態量差分グラフの描画と書式設定
+for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
+    ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
+            
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+29]], color = color1, label=df.columns.values[i_h+29])
+    
+    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+29])
+    #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF 
+    #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
+    ax_heat[i_h-1].tick_params(axis='x', which='major')
+    ax_heat[i_h-1].set_xticklabels([]) 
+    #plt.xtick(color = "none")
     # y軸の文字サイズ変更
     #plt.tick_params(axis='y', which='major', labelsize=10)
     # x軸の文字サイズ変更
-    plt.tick_params(axis='x', which='major', labelsize=10)
 
+#交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）    
+ax_heat[7].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+ax_heat[7].set_xlabel('Date/Time')
+
+
+#特定箇所の書式設定
+"""
 #各グラフのylim書式設定
 ax[0].set_ylim(0,100)
 ax[1].set_ylim(0,100)
@@ -243,7 +302,7 @@ ax[5].set_ylim(0,1)
 
 # y軸を指数表記する
 ax[2].yaxis.set_major_formatter(ptick.ScalarFormatter(useMathText=True))
-
+"""
 """
 #凡例表示の設定
 handler1, label1 = ax1.get_legend_handles_labels()
@@ -254,7 +313,8 @@ ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
 
 #グラフ位置など自動調整
 plt.tight_layout()
-fig.tight_layout()
+fig_state.tight_layout()
+fig_heat.tight_layout()
 #グラフ上の値(x,y)を表示
 #plt.style.use('ggplot') 
 #グラフ表示
