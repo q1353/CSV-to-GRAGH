@@ -59,18 +59,18 @@ state_array =  np.zeros(8)
 #temporary_array [6]:潜熱量Array
 #temporary_array [7]:水分量Array
 
-print(state_array)
+#print(state_array)
 
 #dataframeの行数のカウント：時間ごと状態量の数量
 y_count = dataframe.shape[0]
-print(y_count)
+#print(y_count)
 #dataframeの列数のカウント
 x_count = dataframe.shape[1]
-print(x_count)
+#print(x_count)
 
 #state_arrayの要素数カウント
 state_array_count = state_array.size
-print(state_array_count)
+#print(state_array_count)
 
 #時間ごと状態量Arrayの定義 (2次元目)　#初期値=0
 t_state_array = np.zeros((y_count,state_array_count))
@@ -136,8 +136,7 @@ while z < int(x_count/2):
            n += 1
 
         i += 1
-
-    print(z) 
+        
     #条件変更
     v += 2
     w += 2
