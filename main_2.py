@@ -15,10 +15,19 @@ from InstanceAirClass import InstanceAir
 #data instance
 df = pd.read_csv('test_2.csv')
 
+#NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
+df = df.dropna(how='all')
+
+#int型変換
+df['year'] = df['year'] .astype(int)
+df['month'] = df['month'] .astype(int)
+df['day'] = df['day'] .astype(int)
+
 #int型 ⇒ string型変換
 df['year'] = df['year'] .astype(str)
 df['month'] = df['month'] .astype(str)
 df['day'] = df['day'] .astype(str)
+
 
 #Date/Time列に年月日時間を結合して日付・時間を代入 & Datetime型に変換
 df["Date/Time"] = pd.to_datetime(df['year'] + '-' + df['month'] + '-' + df['day'] + ' ' + df['time'])
@@ -30,7 +39,7 @@ df = df.set_index("Date/Time")
 df = df.drop(['year','month','day','time'],axis=1)
 
 #最新Pandasデータを確認（頭5行のみ）
-print(df.head())
+#print(df.head())
 
 #PandasデータをNumpyデータに変換
 dataframe = df.values
@@ -134,16 +143,16 @@ while z < int(x_count/2):
     w += 2
     z += 1
 
+#表示桁数および指数表示の設定
 np.set_printoptions(precision=3, suppress=True) 
-print(inst_t_state_array)
+#inst_t_state_arrayの内容確認
+#print(inst_t_state_array)
 
 #カウンタの初期化
 i = 0
 z = 0
 s = 0 #各状態量数
 
-#a= inst_t_state_array[z:(z+1),:,0:(i+1)]
-#print(a)
 #NumpyデータをPandasデータに変換して、Pandas DataFrameへ挿入
 while z < int(x_count/2):
     
