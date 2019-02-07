@@ -280,10 +280,7 @@ for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1�
     #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
     ax_heat[i_h-1].set_xticklabels([]) 
-    #plt.xtick(color = "none")
-    # y軸の文字サイズ変更
-    #plt.tick_params(axis='y', which='major', labelsize=10)
-    # x軸の文字サイズ変更
+
 
 #交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）    
 ax_heat[7].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
