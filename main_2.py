@@ -13,7 +13,7 @@ from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
 
 #data instance
-df = pd.read_csv('test_2.csv')
+df = pd.read_csv("20190219_強暖房_data.csv")
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
 df = df.dropna(how='all')
@@ -28,9 +28,10 @@ df['year'] = df['year'] .astype(str)
 df['month'] = df['month'] .astype(str)
 df['day'] = df['day'] .astype(str)
 
-
 #Date/Time列に年月日時間を結合して日付・時間を代入 & Datetime型に変換
 df["Date/Time"] = pd.to_datetime(df['year'] + '-' + df['month'] + '-' + df['day'] + ' ' + df['time'])
+
+#df["Date/Time"]  = pd.to_datetime(df["Date/Time"])
 
 #Date/Time列をインデックスに設定
 df = df.set_index("Date/Time")
@@ -86,8 +87,9 @@ z = 0 #カウンタz 初期化 (温度、湿度インスタンスごとのカウ
 #温度・湿度インスタンスごとの時間毎状態量 Arrayの定義 (3次元目)  #初期値=0
 inst_t_state_array = np.zeros((int(x_count/2),y_count,state_array_count))
 
-#風量airvolume[m3/hr]の初期化
-airvolume = 250
+#風量airvolume[m3/hr]の値入力
+print("風量[m3/hr]を入力してください。")
+airvolume = int(input())
 
 #各行の温度と相対湿度データを引数として、temporary_array各項目の計算と代入
 while z < int(x_count/2):
@@ -147,6 +149,9 @@ np.set_printoptions(precision=3, suppress=True)
 #inst_t_state_arrayの内容確認
 #print(inst_t_state_array)
 
+#データ列数のDataFrameカウント初期化
+x_count = dataframe.shape[1]
+
 #カウンタの初期化
 i = 0
 z = 0
@@ -204,36 +209,39 @@ while z < int(x_count/2):
 
     z += 1
 
+
+#データ列数の上書き
+x_count = df.shape[1]
+
 #交換熱量列の追加
 df["d-TH_0-1"] = df.THCapa0-df.THCapa1
 df["d-SH_0-1"] = df.SHCapa0-df.SHCapa1
 df["d-LH_0-1"] = df.LHCapa0-df.LHCapa1
 df["d-W_0-1"] = df.WaterMass0-df.WaterMass1
-df["d-TH_1-2"] = df.THCapa1-df.THCapa2
-df["d-SH_1-2"] = df.SHCapa1-df.SHCapa2
-df["d-LH_1-2"] = df.LHCapa1-df.LHCapa2
-df["d-W_1-2"] = df.WaterMass1-df.WaterMass2
-
+df["d-TH_2-3"] = df.THCapa2-df.THCapa3
+df["d-SH_2-3"] = df.SHCapa2-df.SHCapa3
+df["d-LH_2-3"] = df.LHCapa2-df.LHCapa3
+df["d-W_2-3"] = df.WaterMass2-df.WaterMass3
 
 #最新Pandasデータを確認（頭5行のみ）
 print(df.head())
 
 #最新PndasデータをCSV形式で出力
-#df.to_csv("sample.csv")
+df.to_csv("result_3.csv")
 
 #グラフ fig インスタンス生成（状態量グラフ）
-fig_state = plt.figure(figsize=(15,12))
+fig_state = plt.figure(figsize=(18,12))
 #グラフ表示数　縦
 v_state = 2
 #グラフ表示数　横
-h_state = 3
+h_state = 4
 # グラフ番号（プロット番号）カウント
 plotnumber_state = v_state * h_state
 #ax_heatオブジェクト保持用list
 ax_state = []
 
 #グラフ fig インスタンス生成（交換熱量グラフ）
-fig_heat = plt.figure(figsize=(15,13))
+fig_heat = plt.figure(figsize=(18,14))
 #グラフ表示数　縦
 v_heat = 8
 #グラフ表示数　横
@@ -271,9 +279,8 @@ for i_s in range(1, plotnumber_state+1): # 1から始まり、plotnunber_state+1
     ax_state[i_s-1].set_ylabel(df.columns.values[i_s-1])
     #ax_state[i_s-1].grid() #seabornデフォルトスタイルを適用時はOFF
     ax_state[i_s-1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
-    #ax_state[i_s-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
-
-    
+    ax_state[i_s-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の間隔設定
+   
 #カウンタ初期化
 i_h = 1
 
@@ -281,13 +288,15 @@ i_h = 1
 for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
     ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
             
-    ax_heat[i_h-1].plot(df.iloc[:, [i_h+29]], color = color1, label=df.columns.values[i_h+29])
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+x_count-1]], color = color1, label=df.columns.values[i_h+x_count-1])
     
-    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+29])
+    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+x_count-1])
     #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF 
     #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
     ax_heat[i_h-1].set_xticklabels([]) 
+    ax_heat[i_h-1].set_ylim(0,1)
+
 
 
 #交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）    
@@ -296,6 +305,15 @@ ax_heat[7].set_xlabel('Date/Time')
 
 
 #特定箇所の書式設定
+ax_state[0].set_ylim(-10,25)
+ax_state[2].set_ylim(-10,25)
+ax_state[4].set_ylim(-10,25)
+ax_state[6].set_ylim(-10,25)
+ax_state[1].set_ylim(0,100)
+ax_state[3].set_ylim(0,100)
+ax_state[5].set_ylim(0,100)
+ax_state[7].set_ylim(0,100)
+
 """
 #各グラフのylim書式設定
 ax[0].set_ylim(0,100)
@@ -317,7 +335,7 @@ ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
 """
 
 #グラフ位置など自動調整
-plt.tight_layout()
+#plt.tight_layout()
 fig_state.tight_layout()
 fig_heat.tight_layout()
 #グラフ上の値(x,y)を表示
