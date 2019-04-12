@@ -13,12 +13,13 @@ from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
 
 #data instance
-df = pd.read_csv("20190219_強暖房_data.csv")
+df = pd.read_csv('190401.csv')
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
 df = df.dropna(how='all')
 
 #int型変換
+"""
 df['year'] = df['year'] .astype(int)
 df['month'] = df['month'] .astype(int)
 df['day'] = df['day'] .astype(int)
@@ -32,18 +33,21 @@ df['day'] = df['day'] .astype(str)
 df["Date/Time"] = pd.to_datetime(df['year'] + '-' + df['month'] + '-' + df['day'] + ' ' + df['time'])
 
 #df["Date/Time"]  = pd.to_datetime(df["Date/Time"])
+"""
+
 
 #Date/Time列をインデックスに設定
 df = df.set_index("Date/Time")
 
 #year month day time を消去
-df = df.drop(['year','month','day','time'],axis=1)
+#df = df.drop(['year','month','day','time'],axis=1)
 
 #最新Pandasデータを確認（頭5行のみ）
 #print(df.head())
 
 #PandasデータをNumpyデータに変換
 dataframe = df.values
+dataframe = dataframe * 0.1
 
 count = dataframe.shape[0] #データ行数のカウント：境界条件設定
 
@@ -81,18 +85,18 @@ t_state_array = np.zeros((y_count,state_array_count))
 i = 0 #カウンタi 初期化 (計算回数)
 n = 0 #カウンタt 初期化 (時間ごと状態量Array2次元目配列への連続代入用)
 v = 0 #カウンタv 初期化 (_tempデータのカウンタ)
-w = 1 #カウンタw 初期化 (_rhumデータのカウンタ)
+w = 24 #カウンタw 初期化 (_rhumデータのカウンタ)
 z = 0 #カウンタz 初期化 (温度、湿度インスタンスごとのカウンタ)
 
 #温度・湿度インスタンスごとの時間毎状態量 Arrayの定義 (3次元目)  #初期値=0
-inst_t_state_array = np.zeros((int(x_count/2),y_count,state_array_count))
+inst_t_state_array = np.zeros((7,y_count,state_array_count))
 
 #風量airvolume[m3/hr]の値入力
 print("風量[m3/hr]を入力してください。")
 airvolume = int(input())
 
 #各行の温度と相対湿度データを引数として、temporary_array各項目の計算と代入
-while z < int(x_count/2):
+while z < 7:
 
     #カウンタの初期化
     i = 0
@@ -140,8 +144,8 @@ while z < int(x_count/2):
         i += 1
         
     #条件変更
-    v += 2
-    w += 2
+    v += 1
+    w += 1
     z += 1
 
 #表示桁数および指数表示の設定
@@ -158,7 +162,7 @@ z = 0
 s = 0 #各状態量数
 
 #NumpyデータをPandasデータに変換して、Pandas DataFrameへ挿入
-while z < int(x_count/2):
+while z < 7:
     
     #カウンタの初期化
     i = 0
@@ -214,20 +218,24 @@ while z < int(x_count/2):
 x_count = df.shape[1]
 
 #交換熱量列の追加
-df["d-TH_0-1"] = df.THCapa0-df.THCapa1
-df["d-SH_0-1"] = df.SHCapa0-df.SHCapa1
-df["d-LH_0-1"] = df.LHCapa0-df.LHCapa1
-df["d-W_0-1"] = df.WaterMass0-df.WaterMass1
-df["d-TH_2-3"] = df.THCapa2-df.THCapa3
-df["d-SH_2-3"] = df.SHCapa2-df.SHCapa3
-df["d-LH_2-3"] = df.LHCapa2-df.LHCapa3
-df["d-W_2-3"] = df.WaterMass2-df.WaterMass3
+df["PreCoil_TH"] = df.THCapa1-df.THCapa2
+df["PreCoil_SH"] = df.SHCapa1-df.SHCapa2
+df["PreCoil_LH"] = df.LHCapa1-df.LHCapa2
+df["PreCoil_W"] = df.WaterMass1-df.WaterMass2
+df["Coil_TH"] = df.THCapa2-df.THCapa3
+df["Coil_SH"] = df.SHCapa2-df.SHCapa3
+df["Coil_LH"] = df.LHCapa2-df.LHCapa3
+df["Coil_W"] = df.WaterMass2-df.WaterMass3
+df["TCoil_TH"] = df.THCapa1-df.THCapa3
+df["TCoil_SH"] = df.SHCapa1-df.SHCapa3
+df["TCoil_LH"] = df.LHCapa1-df.LHCapa3
+df["TCoil_W"] = df.WaterMass1-df.WaterMass3
 
 #最新Pandasデータを確認（頭5行のみ）
 print(df.head())
 
 #最新PndasデータをCSV形式で出力
-df.to_csv("result_3.csv")
+df.to_csv("result_190401.csv")
 
 #グラフ fig インスタンス生成（状態量グラフ）
 fig_state = plt.figure(figsize=(18,12))
@@ -243,7 +251,7 @@ ax_state = []
 #グラフ fig インスタンス生成（交換熱量グラフ）
 fig_heat = plt.figure(figsize=(18,14))
 #グラフ表示数　縦
-v_heat = 8
+v_heat = 4
 #グラフ表示数　横
 h_heat = 1
 # グラフ番号（プロット番号）カウント
@@ -284,26 +292,27 @@ for i_s in range(1, plotnumber_state+1): # 1から始まり、plotnunber_state+1
 #カウンタ初期化
 i_h = 1
 
+
 #交換熱量等　状態量差分グラフの描画と書式設定
 for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
     ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
             
-    ax_heat[i_h-1].plot(df.iloc[:, [i_h+x_count-1]], color = color1, label=df.columns.values[i_h+x_count-1])
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+47]], color = color1, label=df.columns.values[i_h+47])
     
-    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+x_count-1])
+    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+47])
     #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF 
     #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
     ax_heat[i_h-1].set_xticklabels([]) 
-    ax_heat[i_h-1].set_ylim(0,1)
+    ax_heat[i_h-1].set_ylim(0,0.5)
 
 
 
 #交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）    
-ax_heat[7].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
-ax_heat[7].set_xlabel('Date/Time')
+ax_heat[3].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
+ax_heat[3].set_xlabel('Date/Time')
 
-
+"""
 #特定箇所の書式設定
 ax_state[0].set_ylim(-10,25)
 ax_state[2].set_ylim(-10,25)
@@ -313,6 +322,22 @@ ax_state[1].set_ylim(0,100)
 ax_state[3].set_ylim(0,100)
 ax_state[5].set_ylim(0,100)
 ax_state[7].set_ylim(0,100)
+"""
+
+#特定箇所の書式設定
+ax_state[0].set_ylim(20,40)
+ax_state[2].set_ylim(20,40)
+ax_state[4].set_ylim(20,40)
+ax_state[6].set_ylim(20,40)
+ax_state[1].set_ylim(0,100)
+ax_state[3].set_ylim(0,100)
+ax_state[5].set_ylim(0,100)
+ax_state[7].set_ylim(0,100)
+
+
+
+
+
 
 """
 #各グラフのylim書式設定
