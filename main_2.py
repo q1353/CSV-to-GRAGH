@@ -7,13 +7,25 @@ import matplotlib.ticker as ptick
 import matplotlib.dates as mdates
 import datetime
 import seaborn as sns
+import glob
+import os
 
 from WaterClass import Water
 from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
 
+#dateディレクトリ内のCSVファイルを表示
+filelist = [os.path.basename(r) for r in glob.glob('./data/*.csv')]
+for fl in filelist:
+    print(fl)
+
+#読み込むCSVファイルの選択
+print("上記リストより読み込むcsvファイルをコピペしてください。")
+csvfile = str(input())
+
 #data instance
-df = pd.read_csv('190401.csv')
+os.chdir("./data")
+df = pd.read_csv(csvfile)
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
 df = df.dropna(how='all')
@@ -34,7 +46,6 @@ df["Date/Time"] = pd.to_datetime(df['year'] + '-' + df['month'] + '-' + df['day'
 
 #df["Date/Time"]  = pd.to_datetime(df["Date/Time"])
 """
-
 
 #Date/Time列をインデックスに設定
 df = df.set_index("Date/Time")
@@ -101,7 +112,7 @@ while z < 7:
     #カウンタの初期化
     i = 0
     n = 0
-       
+
     while i < y_count:
         _temp = dataframe[i,v]
         _rhum = dataframe[i,w]
@@ -133,23 +144,23 @@ while z < 7:
         state_array[5] = SH
         state_array[6] = LH
         state_array[7] = W
-        
+
         #inst_t_state_arrayの各要素へ状態量代入
         for n in  range(0,int(state_array_count)):
 
            inst_t_state_array[z,i,n] =  state_array[n]
-           
+
            n += 1
 
         i += 1
-        
+
     #条件変更
     v += 1
     w += 1
     z += 1
 
 #表示桁数および指数表示の設定
-np.set_printoptions(precision=3, suppress=True) 
+np.set_printoptions(precision=3, suppress=True)
 #inst_t_state_arrayの内容確認
 #print(inst_t_state_array)
 
@@ -163,7 +174,7 @@ s = 0 #各状態量数
 
 #NumpyデータをPandasデータに変換して、Pandas DataFrameへ挿入
 while z < 7:
-    
+
     #カウンタの初期化
     i = 0
 
@@ -188,7 +199,7 @@ while z < 7:
         a5 = a5.transpose((0,2,1))
         a6 = a6.transpose((0,2,1))
         a7 = a7.transpose((0,2,1))
-        
+
         #3次元データフレームを1次元データフレームへ変換
         a0 = a0.flatten()
         a1 = a1.flatten()
@@ -198,7 +209,7 @@ while z < 7:
         a5 = a5.flatten()
         a6 = a6.flatten()
         a7 = a7.flatten()
-        
+
         #pandas DataFlame df にNumpyData inst_t_state_arrayデータ抽出し代入
         df["A.hum"+str(z)] = np.array(a0)
         df["Enthalpy"+str(z)] = np.array(a1)
@@ -232,11 +243,13 @@ df["TCoil_LH"] = df.LHCapa1-df.LHCapa3
 df["TCoil_W"] = df.WaterMass1-df.WaterMass3
 
 #最新Pandasデータを確認（頭5行のみ）
-print(df.head())
+#print(df.head())
 
 #最新PndasデータをCSV形式で出力
-df.to_csv("result_190401.csv")
+os.chdir('../result')
+df.to_csv('result_'+csvfile)
 
+'''
 #グラフ fig インスタンス生成（状態量グラフ）
 fig_state = plt.figure(figsize=(18,12))
 #グラフ表示数　縦
@@ -247,6 +260,7 @@ h_state = 4
 plotnumber_state = v_state * h_state
 #ax_heatオブジェクト保持用list
 ax_state = []
+'''
 
 #グラフ fig インスタンス生成（交換熱量グラフ）
 fig_heat = plt.figure(figsize=(18,14))
@@ -278,39 +292,43 @@ color3 = 'tab:Green'
 #カウンタ初期化
 i_s = 1
 
+'''
 #状態量グラフの描画と書式設定
 for i_s in range(1, plotnumber_state+1): # 1から始まり、plotnunber_state+1まで処理する
     ax_state = np.append(ax_state,fig_state.add_subplot(v_state,h_state,i_s)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報_state list型に追加
-            
+
     ax_state[i_s-1].plot(df.iloc[:, [i_s-1]], color = color1, label=df.columns.values[i_s-1])
     ax_state[i_s-1].set_xlabel('Date/Time')
     ax_state[i_s-1].set_ylabel(df.columns.values[i_s-1])
     #ax_state[i_s-1].grid() #seabornデフォルトスタイルを適用時はOFF
     ax_state[i_s-1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
     ax_state[i_s-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の間隔設定
-   
+
+'''
+
 #カウンタ初期化
 i_h = 1
-
 
 #交換熱量等　状態量差分グラフの描画と書式設定
 for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
     ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
-            
-    ax_heat[i_h-1].plot(df.iloc[:, [i_h+47]], color = color1, label=df.columns.values[i_h+47])
-    
-    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+47])
-    #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF 
+
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+47]], color = color1, label=df.columns.values[i_h+96])
+    ax_heat[i_s-1].set_xlabel('Date/Time')
+    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+96])
+    #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF
     #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
-    ax_heat[i_h-1].set_xticklabels([]) 
+    ax_heat[i_h-1].set_xticklabels([])
     ax_heat[i_h-1].set_ylim(0,0.5)
 
 
 
-#交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）    
+#交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）
+'''
 ax_heat[3].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
 ax_heat[3].set_xlabel('Date/Time')
+'''
 
 """
 #特定箇所の書式設定
@@ -324,6 +342,7 @@ ax_state[5].set_ylim(0,100)
 ax_state[7].set_ylim(0,100)
 """
 
+'''
 #特定箇所の書式設定
 ax_state[0].set_ylim(20,40)
 ax_state[2].set_ylim(20,40)
@@ -333,11 +352,7 @@ ax_state[1].set_ylim(0,100)
 ax_state[3].set_ylim(0,100)
 ax_state[5].set_ylim(0,100)
 ax_state[7].set_ylim(0,100)
-
-
-
-
-
+'''
 
 """
 #各グラフのylim書式設定
@@ -351,6 +366,7 @@ ax[5].set_ylim(0,1)
 # y軸を指数表記する
 ax[2].yaxis.set_major_formatter(ptick.ScalarFormatter(useMathText=True))
 """
+
 """
 #凡例表示の設定
 handler1, label1 = ax1.get_legend_handles_labels()
@@ -361,9 +377,9 @@ ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
 
 #グラフ位置など自動調整
 #plt.tight_layout()
-fig_state.tight_layout()
-fig_heat.tight_layout()
+#fig_state.tight_layout()
+#fig_heat.tight_layout()
 #グラフ上の値(x,y)を表示
-#plt.style.use('ggplot') 
+#plt.style.use('ggplot')
 #グラフ表示
 plt.show()
