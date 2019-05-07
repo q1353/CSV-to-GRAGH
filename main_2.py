@@ -5,11 +5,11 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ptick
 import matplotlib.dates as mdates
-import datetime
 import seaborn as sns
 import glob
 import os
 
+from datetime import datetime as dt
 from WaterClass import Water
 from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
@@ -29,6 +29,9 @@ df = pd.read_csv(csvfile)
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
 df = df.dropna(how='all')
+
+#df["Date/Time"]を日付型に変換
+df["Date/Time"] =  pd.to_datetime(df["Date/Time"])
 
 #int型変換
 """
@@ -249,21 +252,8 @@ df["TCoil_W"] = df.WaterMass1-df.WaterMass3
 os.chdir('../result')
 df.to_csv('result_'+csvfile)
 
-'''
-#グラフ fig インスタンス生成（状態量グラフ）
-fig_state = plt.figure(figsize=(18,12))
-#グラフ表示数　縦
-v_state = 2
-#グラフ表示数　横
-h_state = 4
-# グラフ番号（プロット番号）カウント
-plotnumber_state = v_state * h_state
-#ax_heatオブジェクト保持用list
-ax_state = []
-'''
-
 #グラフ fig インスタンス生成（交換熱量グラフ）
-fig_heat = plt.figure(figsize=(18,14))
+fig_heat = plt.figure(figsize=(16,12))
 #グラフ表示数　縦
 v_heat = 4
 #グラフ表示数　横
@@ -290,39 +280,22 @@ color2 = 'tab:blue'
 color3 = 'tab:Green'
 
 #カウンタ初期化
-i_s = 1
-
-'''
-#状態量グラフの描画と書式設定
-for i_s in range(1, plotnumber_state+1): # 1から始まり、plotnunber_state+1まで処理する
-    ax_state = np.append(ax_state,fig_state.add_subplot(v_state,h_state,i_s)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報_state list型に追加
-
-    ax_state[i_s-1].plot(df.iloc[:, [i_s-1]], color = color1, label=df.columns.values[i_s-1])
-    ax_state[i_s-1].set_xlabel('Date/Time')
-    ax_state[i_s-1].set_ylabel(df.columns.values[i_s-1])
-    #ax_state[i_s-1].grid() #seabornデフォルトスタイルを適用時はOFF
-    ax_state[i_s-1].xaxis.set_major_formatter(mdates.DateFormatter("%m/%d\n%H:%M"))
-    ax_state[i_s-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の間隔設定
-
-'''
-
-#カウンタ初期化
 i_h = 1
 
 #交換熱量等　状態量差分グラフの描画と書式設定
 for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
-    ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_stateへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
+    ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_heatへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
 
-    ax_heat[i_h-1].plot(df.iloc[:, [i_h+47]], color = color1, label=df.columns.values[i_h+96])
-    ax_heat[i_s-1].set_xlabel('Date/Time')
-    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+96])
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+103]], color = color1, label=df.columns.values[i_h+103])
+    ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+103])
     #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF
-    #ax_heat[i_h-1].xaxis.set_major_locator(mdates.DayLocator()) #時系列のX軸の間隔設定
+    ax_heat[i_h-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
-    ax_heat[i_h-1].set_xticklabels([])
-    ax_heat[i_h-1].set_ylim(0,0.5)
+    #ax_heat[i_h-1].set_xticks([])
+    ax_heat[i_h-1].set_ylim(0,5)
 
 
+ax_heat[i_h-1].set_xlabel('Date/Time')
 
 #交換熱量等　状態量差分グラフの描画と書式設定　（特定部分のみ）
 '''
@@ -376,10 +349,9 @@ ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
 """
 
 #グラフ位置など自動調整
-#plt.tight_layout()
-#fig_state.tight_layout()
-#fig_heat.tight_layout()
+plt.tight_layout()
+fig_heat.tight_layout()
 #グラフ上の値(x,y)を表示
-#plt.style.use('ggplot')
+plt.style.use('ggplot')
 #グラフ表示
 plt.show()
