@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
     "",
-    "\\sample"
+    "\\data",
+    "\\result"
   ],
+  "SelectedNode": "\\result",
   "PreviewInSolutionExplorer": false
 }
