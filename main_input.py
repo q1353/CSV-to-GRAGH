@@ -15,8 +15,8 @@ from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
 
 #dateディレクトリ内のCSVファイルを表示
-filelist = [os.path.basename(r) for r in glob.glob('./data/*.csv')]
-for fl in filelist:
+FileList = [os.path.basename(r) for r in glob.glob('./data/*.csv')]
+for fl in FileList:
     print(fl)
 
 #読み込むCSVファイルの選択と入力
@@ -218,7 +218,7 @@ while z < 7:
         a7 = a7.flatten()
 
         #pandas DataFlame df にNumpyData inst_t_state_arrayデータ抽出し代入
-        df["A.hum"+str(z)] = np.array(a0)
+        df["Ahum"+str(z)] = np.array(a0)
         df["Enthalpy"+str(z)] = np.array(a1)
         df["DewPoint"+str(z)] = np.array(a2)
         df["SpecificVolume"+str(z)] = np.array(a3)
@@ -250,13 +250,21 @@ df["TCoil_LH(kW)"] = abs(df.LHCapa1-df.LHCapa3)
 df["TCoil_W(kg/h)"] = abs(df.WaterMass1-df.WaterMass3)
 
 #再熱量列の追加
-df["ReHeat_TH(kW)"] = abs(df.THCapa4-df.THCapa3)
-df["ReHeat_SH(kW)"] = abs(df.SHCapa4-df.SHCapa3)
-df["ReHeat_LH(kW)"] = abs(df.LHCapa4-df.LHCapa3)
+df["ReHeat_TH(kW)"] = (df.THCapa4-df.THCapa3)
+df["ReHeat_SH(kW)"] = (df.SHCapa4-df.SHCapa3)
+df["ReHeat_LH(kW)"] = (df.LHCapa4-df.LHCapa3)
 
 #全熱交換器効率
 df["SHE(%)"] = (abs(df.SHCapa0-df.SHCapa1) / abs(df.SHCapa0-df.SHCapa5))*100
 df["THE(%)"] = (abs(df.THCapa0-df.THCapa1) / abs(df.THCapa0-df.THCapa5))*100
+
+#温度変化
+df["OATemp"] = (df.iloc[:, [0]]) / 10
+df["hxTemp"] = (df.iloc[:, [1]]) / 10
+df["preTemp"] = (df.iloc[:, [2]]) / 10
+df["evaTemp"] = (df.iloc[:, [3]]) / 10
+df["condTemp"] = (df.iloc[:, [4]]) / 10
+df["diffTemp"] = df.condTemp - df.evaTemp
 
 #最新Pandasデータを確認（頭5行のみ）
 #print(df.head())
@@ -298,114 +306,141 @@ plotnumber_hxe = v_hxe * h_hxe
 #ax_heatオブジェクト保持用list
 ax_hxe = []
 
+#グラフ fig インスタンス生成（温度変化グラフ）
+fig_temp = plt.figure(figsize=(14,8))
+#グラフ表示数　縦
+v_temp = 1
+#グラフ表示数　横
+h_temp = 1
+# グラフ番号（プロット番号）カウント
+plotnumber_temp = v_temp * h_temp
+#ax_temp AXESインスタンス生成
+ax_temp = fig_temp.add_subplot(1,1,1)
+ax_diff = ax_temp.twinx()
+
 #seabornデフォルトスタイルを適用
 sns.set()
 
-#全体共通書式設定
-"""
-#y軸の文字サイズ変更
-plt.tick_params(axis='y', which='major', labelsize=10)
-#x軸の文字サイズ変更
-plt.tick_params(axis='x', which='major', labelsize=10)
-"""
-
 #使用できる色の設定
-color1 = 'tomato'
-color2 = 'royalblue'
-color3 = 'forestgreen'
-color4 = 'lightgrey'
+color = ['tomato', 'royalblue', 'forestgreen', 'darkorange', 'darkviolet','midnightblue']
+color10 = 'lightgrey'
 
 #カウンタ初期化
 i_h = 1
 i_rh = 1
 i_hxe = 1
+i_temp = 1
 
+#グラフタイトル名の設定
+GraghTitle = CsvFile.replace(".csv", "_")
+GraghTitle = GraghTitle.replace("input", "_")
+GraghTitle = 'result' + GraghTitle + '_' + str(AirVolume) +'m3/h' + '__' + ComplementaryInfo
 
 #交換熱量グラフの描画と書式設定
 for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1まで処理する
     ax_heat = np.append(ax_heat,fig_heat.add_subplot(v_heat,h_heat,i_h)) # AXESをfig_heatへ追加(v,h)&順序i ⇒ この配列情報ax_heat list型に追加
 
-    ax_heat[i_h-1].plot(df.iloc[:, [i_h+103]], color = color1, label=df.columns.values[i_h+103])
+    ax_heat[i_h-1].plot(df.iloc[:, [i_h+103]], color = color[0], label=df.columns.values[i_h+103])
     ax_heat[i_h-1].set_ylabel(df.columns.values[i_h+103])
     #ax_heat[i_h-1].grid() #seabornデフォルトスタイルを適用時はOFF
     ax_heat[i_h-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
     ax_heat[i_h-1].xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
-    ax_heat[i_h-1].yaxis.set_minor_locator(ptick.MultipleLocator(1)) #時系列のY軸の（主）間隔設定
+    ax_heat[i_h-1].yaxis.set_minor_locator(ptick.MultipleLocator(1)) #Y軸の（主）間隔設定
     ax_heat[i_h-1].tick_params(axis='x', which='major')
     ax_heat[i_h-1].grid(which='minor') #小目盛に対してグリッド表示
-    ax_heat[i_h-1].set_ylim(0,6)
-    ax_heat[i_h-1].set_facecolor(color4) 
+    ax_heat[i_h-1].set_ylim(0,4)
+    ax_heat[i_h-1].set_facecolor(color10) 
 
     #最後のグラフ以外はX軸表記しない
     if i_h < (plotnumber_heat):
         ax_heat[i_h-1].set_xticklabels([])
     #最初のグラフの上左にタイトル表示
-    if i_h < 2:
+    if i_h == 1:
         #グラフタイトルの表示
-        graghtitle = CsvFile.replace(".csv", "_")
-        graghtitle = graghtitle.replace("input", "_")
-        #fig_heat.title('result' + graghtitle + '_' + str(AirVolume) +'m3/h' + '__' + ComplementaryInfo, loc="left", fontsize=15, fontweight='bold')
+        ax_heat[i_h-1].set_title(GraghTitle + '_HeatExchange', loc="left", fontsize=15, fontweight='bold')
 
 #再熱量グラフの描画と書式設定
 for i_rh in range(1, plotnumber_reheat+1): # 1から始まり、plotnunber_reheat+1まで処理する
     ax_reheat = np.append(ax_reheat,fig_reheat.add_subplot(v_reheat,h_reheat,i_rh)) # AXESをfig_reheatへ追加(v,h)&順序i ⇒ この配列情報ax_reheat list型に追加
 
-    ax_reheat[i_rh-1].plot(df.iloc[:, [i_rh+107]], color = color1, label=df.columns.values[i_rh+107])
+    ax_reheat[i_rh-1].plot(df.iloc[:, [i_rh+107]], color = color[0], label=df.columns.values[i_rh+107])
     ax_reheat[i_rh-1].set_ylabel(df.columns.values[i_rh+107])
     #ax_reheat[i_rh-1].grid() #seabornデフォルトスタイルを適用時はOFF
     ax_reheat[i_rh-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
     ax_reheat[i_rh-1].xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
-    ax_reheat[i_rh-1].yaxis.set_minor_locator(ptick.MultipleLocator(1)) #時系列のY軸の（主）間隔設定
+    ax_reheat[i_rh-1].yaxis.set_minor_locator(ptick.MultipleLocator(1)) #Y軸の（主）間隔設定
     ax_reheat[i_rh-1].tick_params(axis='x', which='major')
     ax_reheat[i_rh-1].grid(which='minor') #小目盛に対してグリッド表示
-    ax_reheat[i_rh-1].set_ylim(0,4)
-    ax_reheat[i_rh-1].set_facecolor(color4) 
+    ax_reheat[i_rh-1].set_ylim(-2,2)
+    ax_reheat[i_rh-1].set_facecolor(color10) 
 
     #最後のグラフ以外はX軸表記しない
     if i_rh < (plotnumber_reheat):
         ax_reheat[i_rh-1].set_xticklabels([])
     #最初のグラフの上左にタイトル表示
-    if i_rh < 2:
+    if i_rh == 1:
         #グラフタイトルの表示
-        graghtitle = CsvFile.replace(".csv", "_")
-        graghtitle = graghtitle.replace("input", "_")
-        #fig_reheat.title('result' + graghtitle + '_' + str(AirVolume) +'m3/h' + '__' + ComplementaryInfo, loc="left", fontsize=15, fontweight='bold')
+        ax_reheat[i_rh-1].set_title(GraghTitle + '_ReHeat', loc="left", fontsize=15, fontweight='bold')
 
 #全熱交換器効率グラフの描画と書式設定
 for i_hxe in range(1, plotnumber_hxe+1): # 1から始まり、plotnunber_hxeまで処理する
     ax_hxe = np.append(ax_hxe,fig_hxe.add_subplot(v_hxe,h_hxe,i_hxe)) # AXESをfig_hxeへ追加(v,h)&順序i ⇒ この配列情報ax_hxe list型に追加
 
-    ax_hxe[i_hxe-1].plot(df.iloc[:, [i_hxe+110]], color = color1, label=df.columns.values[i_hxe+110])
+    ax_hxe[i_hxe-1].plot(df.iloc[:, [i_hxe+110]], color = color[0], label=df.columns.values[i_hxe+110])
     ax_hxe[i_hxe-1].set_ylabel(df.columns.values[i_hxe+110])
     #ax_hxe[i_hxe-1].grid() #seabornデフォルトスタイルを適用時はOFF
     ax_hxe[i_hxe-1].xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
     ax_hxe[i_hxe-1].xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
-    ax_hxe[i_hxe-1].yaxis.set_minor_locator(ptick.MultipleLocator(10)) #時系列のY軸の（主）間隔設定
+    ax_hxe[i_hxe-1].yaxis.set_minor_locator(ptick.MultipleLocator(10)) #Y軸の（主）間隔設定
     ax_hxe[i_hxe-1].tick_params(axis='x', which='major')
     ax_hxe[i_hxe-1].grid(which='minor') #小目盛に対してグリッド表示
     ax_hxe[i_hxe-1].set_ylim(0,100)
-    ax_hxe[i_hxe-1].set_facecolor(color4) 
+    ax_hxe[i_hxe-1].set_facecolor(color10) 
 
     #最後のグラフ以外はX軸表記しない
     if i_hxe < (plotnumber_hxe):
         ax_hxe[i_hxe-1].set_xticklabels([])
     #最初のグラフの上左にタイトル表示
-    if i_hxe < 2:
+    if i_hxe == 1:
         #グラフタイトルの表示
-        graghtitle = CsvFile.replace(".csv", "_")
-        graghtitle = graghtitle.replace("input", "_")
-        #fig_hxe.title('result' + graghtitle + '_' + str(AirVolume) +'m3/h' + '__' + ComplementaryInfo, loc="left", fontsize=15, fontweight='bold')
+        ax_hxe[i_hxe-1].set_title(GraghTitle + '_HeatExchangeEfficent', loc="left", fontsize=15, fontweight='bold')
 
-'''
-# y軸を指数表記する
-ax[2].yaxis.set_major_formatter(ptick.ScalarFormatter(useMathText=True))
+#温度変化グラフの描画と書式設定
 
-#凡例表示の設定
-handler1, label1 = ax1.get_legend_handles_labels()
-handler2, label2 = ax2.get_legend_handles_labels()
+#第1軸設定
+for i_temp in range (1, 6):
+    ax_temp.plot(df.iloc[:, [i_temp+112]], color = color[i_temp-1], label=df.columns.values[i_temp+112])
 
-ax1.legend(handler1 + handler2, label1 + label2, loc=2, borderaxespad=0.)
-'''
+#第2軸設定
+ax_diff.plot(df.iloc[:, [118]], color = color[5], label=df.columns.values[118], ls="--")
+
+#第1軸の書式設定
+ax_temp.grid(which='major')
+ax_temp.xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
+ax_temp.xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
+ax_temp.yaxis.set_minor_locator(ptick.MultipleLocator(5)) #Y軸の（主）間隔設定
+ax_temp.tick_params(axis='x', which='major')
+ax_temp.grid(which='minor', ls=":") #小目盛に対してグリッド表示
+ax_temp.set_ylim(0,50)
+ax_temp.set_ylabel('Temp(C)')
+ax_temp.set_facecolor(color10) 
+ax_temp.set_title(GraghTitle + '_Temprature', loc="left", fontsize=15, fontweight='bold')
+
+#第2軸の書式設定
+ax_diff.yaxis.set_minor_locator(ptick.MultipleLocator(5)) #Y軸の（主）間隔設定
+ax_diff.set_ylim(0,50)
+ax_diff.set_ylabel('DiffTemp Cond & Eva (C)')
+
+#重ね順の設定。
+ax_temp.set_zorder(2)
+ax_diff.set_zorder(1)
+
+#折れ線グラフの背景を透明に。
+ax_temp.patch.set_alpha(0)
+
+#凡例を表示（グラフ左上、ax2をax1のやや下に持っていく）
+ax_temp.legend(bbox_to_anchor=(0, 1), loc='upper left', borderaxespad=0.5, fontsize=10)
+ax_diff.legend(bbox_to_anchor=(0.1, 1), loc='upper left', borderaxespad=0.5, fontsize=10)
 
 #グラフ下段のみX軸書式設定
 ax_heat[i_h-1].set_xlabel('Date/Time')
@@ -416,6 +451,10 @@ ax_reheat[i_rh-1].xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M')
 
 ax_hxe[i_hxe-1].set_xlabel('Date/Time')
 ax_hxe[i_hxe-1].xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+
+ax_temp.set_xlabel('Date/Time')
+ax_temp.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+
 
 #グラフ位置など自動調整
 plt.tight_layout()
@@ -429,6 +468,7 @@ PngFile = CsvFile.replace(".csv", ".png")
 fig_heat.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__heat_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 fig_reheat.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__reheat_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 fig_hxe.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__hxe_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
+fig_temp.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__temp_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 
 #グラフ表示
-plt.show()
+#plt.show()
