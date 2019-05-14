@@ -5,6 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ptick
 import matplotlib.dates as mdates
+import japanize_matplotlib
 import seaborn as sns
 import glob
 import os
@@ -13,6 +14,12 @@ from datetime import datetime as dt
 from WaterClass import Water
 from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
+
+#将来暗黙的に登録された日時コンバータをmatplotlibプロット方法に使用する。
+#コンバータはインポート時にPandasによって登録されました。
+#将来のバージョンのPandasでは明示的にmatplotlibコンバータを登録する必要があります。
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
 
 #dateディレクトリ内のCSVファイルを表示
 FileList = [os.path.basename(r) for r in glob.glob('./data/*.csv')]
@@ -349,7 +356,7 @@ for i_h in range(1, plotnumber_heat+1): # 1から始まり、plotnunber_heat+1�
     ax_heat[i_h-1].tick_params(axis='x', which='major')
     ax_heat[i_h-1].grid(which='minor') #小目盛に対してグリッド表示
     ax_heat[i_h-1].set_ylim(0,4)
-    ax_heat[i_h-1].set_facecolor(color10) 
+    ax_heat[i_h-1].set_facecolor(color10)
 
     #最後のグラフ以外はX軸表記しない
     if i_h < (plotnumber_heat):
@@ -372,7 +379,7 @@ for i_rh in range(1, plotnumber_reheat+1): # 1から始まり、plotnunber_rehea
     ax_reheat[i_rh-1].tick_params(axis='x', which='major')
     ax_reheat[i_rh-1].grid(which='minor') #小目盛に対してグリッド表示
     ax_reheat[i_rh-1].set_ylim(-2,2)
-    ax_reheat[i_rh-1].set_facecolor(color10) 
+    ax_reheat[i_rh-1].set_facecolor(color10)
 
     #最後のグラフ以外はX軸表記しない
     if i_rh < (plotnumber_reheat):
@@ -395,7 +402,7 @@ for i_hxe in range(1, plotnumber_hxe+1): # 1から始まり、plotnunber_hxeま�
     ax_hxe[i_hxe-1].tick_params(axis='x', which='major')
     ax_hxe[i_hxe-1].grid(which='minor') #小目盛に対してグリッド表示
     ax_hxe[i_hxe-1].set_ylim(0,100)
-    ax_hxe[i_hxe-1].set_facecolor(color10) 
+    ax_hxe[i_hxe-1].set_facecolor(color10)
 
     #最後のグラフ以外はX軸表記しない
     if i_hxe < (plotnumber_hxe):
@@ -423,7 +430,7 @@ ax_temp.tick_params(axis='x', which='major')
 ax_temp.grid(which='minor', ls=":") #小目盛に対してグリッド表示
 ax_temp.set_ylim(0,50)
 ax_temp.set_ylabel('Temp(C)')
-ax_temp.set_facecolor(color10) 
+ax_temp.set_facecolor(color10)
 ax_temp.set_title(GraghTitle + '_Temprature', loc="left", fontsize=15, fontweight='bold')
 
 #第2軸の書式設定
