@@ -451,16 +451,16 @@ ax_diff.legend(bbox_to_anchor=(0.1, 1), loc='upper left', borderaxespad=0.5, fon
 
 #グラフ下段のみX軸書式設定
 ax_heat[i_h-1].set_xlabel('Date/Time')
-ax_heat[i_h-1].xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+ax_heat[i_h-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 ax_reheat[i_rh-1].set_xlabel('Date/Time')
-ax_reheat[i_rh-1].xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+ax_reheat[i_rh-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 ax_hxe[i_hxe-1].set_xlabel('Date/Time')
-ax_hxe[i_hxe-1].xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+ax_hxe[i_hxe-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 ax_temp.set_xlabel('Date/Time')
-ax_temp.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d\n%H:%M'))
+ax_temp.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 
 #グラフ位置など自動調整
