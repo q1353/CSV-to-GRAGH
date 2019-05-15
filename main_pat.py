@@ -5,7 +5,7 @@ import math
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ptick
 import matplotlib.dates as mdates
-import japanize_matplotlib
+#import japanize_matplotlib #macOSでは認識しない...
 import seaborn as sns
 import glob
 import os
@@ -324,6 +324,27 @@ plotnumber_temp = v_temp * h_temp
 #ax_temp AXESインスタンス生成
 ax_temp = fig_temp.add_subplot(1,1,1)
 ax_diff = ax_temp.twinx()
+
+#df.index.values で時間列を取得しTimeに代入
+Time = df.index.values
+
+#X軸用array:経過時間の初期化
+TimeSpan = []
+
+#dataframeの行数を取得
+y_count = len(df)
+
+#カウンタ初期化
+i_et = 0
+#X軸用array:経過時間の初設定
+for i_et in range(0,y_count):
+    if i == y_count:
+        break
+    TimeSpan = append(Time[i+1] - Time[i])
+
+print (Time)
+print (TimeSpan)
+print (df.dtypes)
 
 #seabornデフォルトスタイルを適用
 sns.set()
