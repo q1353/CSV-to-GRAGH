@@ -314,20 +314,17 @@ plotnumber_hxe = v_hxe * h_hxe
 ax_hxe = []
 
 #グラフ fig インスタンス生成（温度変化グラフ）
-fig_temp = plt.figure(figsize=(14,8))
+fig_temp = plt.figure(figsize=(14,12))
 #グラフ表示数　縦
-v_temp = 1
+v_temp = 2
 #グラフ表示数　横
 h_temp = 1
 # グラフ番号（プロット番号）カウント
 plotnumber_temp = v_temp * h_temp
-#ax_temp AXESインスタンス生成
-ax_temp = fig_temp.add_subplot(1,1,1)
-ax_diff = ax_temp.twinx()
 
 #df.index.values で時間列を取得しTimeに代入
 Time = df.index.values
-
+Time = pd.to_datetime(Time)
 #X軸用array:経過時間の初期化
 TimeSpan = []
 
@@ -335,16 +332,19 @@ TimeSpan = []
 y_count = len(df)
 
 #カウンタ初期化
-i_et = 0
+i_ts = 0
 #X軸用array:経過時間の初設定
-for i_et in range(0,y_count):
-    if i == y_count:
+for i_ts in range(0, y_count):
+    if i_ts == y_count-1:
+        TimeSpan = np.append(TimeSpan, TimeSpan[i_ts-1] + DeltaTime)
         break
-    TimeSpan = append(Time[i+1] - Time[i])
-
-print (Time)
-print (TimeSpan)
-print (df.dtypes)
+    elif i_ts == 0:
+        TimeSpan = np.append(TimeSpan, 0)
+    elif i_ts > 0:
+        DeltaTime = Time[i_ts+1] - Time[i_ts]
+        DeltaTime = DeltaTime.seconds
+        AddTime = TimeSpan[i_ts-1] + DeltaTime
+        TimeSpan = np.append(TimeSpan, AddTime)
 
 #seabornデフォルトスタイルを適用
 sns.set()
@@ -352,6 +352,7 @@ sns.set()
 #使用できる色の設定
 color = ['tomato', 'royalblue', 'forestgreen', 'darkorange', 'darkviolet','midnightblue']
 color10 = 'lightgrey'
+color11 = 'white'
 
 #カウンタ初期化
 i_h = 1
@@ -436,39 +437,43 @@ for i_hxe in range(1, plotnumber_hxe+1): # 1から始まり、plotnunber_hxeま�
 #温度変化グラフの描画と書式設定
 
 #第1軸設定
+ax_temp = fig_temp.add_subplot(2,1,2)
 for i_temp in range (1, 6):
-    ax_temp.plot(df.iloc[:, [i_temp+112]], color = color[i_temp-1], label=df.columns.values[i_temp+112])
+    ax_temp.plot(TimeSpan, df.iloc[:, [i_temp+112]], color = color[i_temp-1], label=df.columns.values[i_temp+112])
 
-#第2軸設定
-ax_diff.plot(df.iloc[:, [118]], color = color[5], label=df.columns.values[118], ls="--")
+ax_diff = fig_temp.add_subplot(2,1,1)
+ax_diff.plot(TimeSpan, df.iloc[:,118], color = color[5], label=df.columns.values[118], ls="--")
 
-#第1軸の書式設定
+#ax_tempの書式設定
 ax_temp.grid(which='major')
-ax_temp.xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
-ax_temp.xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
+#ax_temp.xaxis.set_major_locator(mdates.HourLocator()) #時系列のX軸の（主）間隔設定
+#ax_temp.xaxis.set_minor_locator(mdates.MinuteLocator(30)) #時系列のX軸の（副）間隔設定
 ax_temp.yaxis.set_minor_locator(ptick.MultipleLocator(5)) #Y軸の（主）間隔設定
 ax_temp.tick_params(axis='x', which='major')
 ax_temp.grid(which='minor', ls=":") #小目盛に対してグリッド表示
 ax_temp.set_ylim(0,50)
 ax_temp.set_ylabel('Temp(C)')
 ax_temp.set_facecolor(color10)
-ax_temp.set_title(GraghTitle + '_Temprature', loc="left", fontsize=15, fontweight='bold')
 
-#第2軸の書式設定
+
+#ax_diffの書式設定
+ax_diff.grid(which='major')
 ax_diff.yaxis.set_minor_locator(ptick.MultipleLocator(5)) #Y軸の（主）間隔設定
+ax_diff.tick_params(axis='x', which='major')
+ax_diff.grid(which='minor', ls=":") #小目盛に対してグリッド表示
 ax_diff.set_ylim(0,50)
 ax_diff.set_ylabel('DiffTemp Cond & Eva (C)')
+ax_diff.set_facecolor(color10)
+ax_diff.set_xticklabels([])
+ax_diff.set_title(GraghTitle + '_Temprature', loc="left", fontsize=15, fontweight='bold')
 
-#重ね順の設定。
-ax_temp.set_zorder(2)
-ax_diff.set_zorder(1)
-
-#折れ線グラフの背景を透明に。
-ax_temp.patch.set_alpha(0)
+#グラフの背景を透明に。
+#ax_temp.patch.set_alpha(0)
+#ax_diff.patch.set_alpha(0)
 
 #凡例を表示（グラフ左上、ax2をax1のやや下に持っていく）
 ax_temp.legend(bbox_to_anchor=(0, 1), loc='upper left', borderaxespad=0.5, fontsize=10)
-ax_diff.legend(bbox_to_anchor=(0.1, 1), loc='upper left', borderaxespad=0.5, fontsize=10)
+ax_diff.legend(bbox_to_anchor=(0, 1), loc='upper left', borderaxespad=0.5, fontsize=10)
 
 #グラフ下段のみX軸書式設定
 ax_heat[i_h-1].set_xlabel('Date/Time')
@@ -480,8 +485,8 @@ ax_reheat[i_rh-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 ax_hxe[i_hxe-1].set_xlabel('Date/Time')
 ax_hxe[i_hxe-1].xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
-ax_temp.set_xlabel('Date/Time')
-ax_temp.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+ax_temp.set_xlabel('TimeSpan(Sec)')
+#ax_temp.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
 
 
 #グラフ位置など自動調整
@@ -499,4 +504,4 @@ fig_hxe.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__hxe_
 fig_temp.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__temp_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 
 #グラフ表示
-#plt.show()
+plt.show()
