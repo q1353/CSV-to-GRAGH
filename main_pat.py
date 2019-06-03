@@ -8,12 +8,17 @@ import matplotlib.dates as mdates
 #import japanize_matplotlib #macOSでは認識しない...
 import seaborn as sns
 import glob
-import os
+import os,sys
 
 from datetime import datetime as dt
 from WaterClass import Water
 from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
+
+from tkinter import *
+from tkinter import ttk
+from tkinter import messagebox
+from tkinter import filedialog
 
 #将来暗黙的に登録された日時コンバータをmatplotlibプロット方法に使用する。
 #コンバータはインポート時にPandasによって登録されました。
@@ -21,25 +26,36 @@ from InstanceAirClass import InstanceAir
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-#dateディレクトリ内のCSVファイルを表示
-FileList = [os.path.basename(r) for r in glob.glob('./data/*.csv')]
-for fl in FileList:
-    print(fl)
+#生データディレクトリ data をカレントディレクトリとする。
+os.chdir("./data")
+
+#tkinter によるWindowの表示
+root = Tk()
+#小さいtkinterの非表示
+root.withdraw()
+
+#ユーザーフィードバック待機
+messagebox.showinfo("Show Information", "次に開くダイアログから、解析したい csvファイル を選択してください。")
+
+#ファイル選択ダイアログを表示
+fTyp = [("","*")]
+iDir = os.path.abspath(os.path.dirname(__file__))
+FilePath = filedialog.askopenfilename(filetypes = fTyp,initialdir = iDir)
+SelectedFile = os.path.basename(FilePath)
 
 #読み込むCSVファイルの選択と入力
-print("上記リストより読み込むcsvファイルをコピペしてください。")
-CsvFile = str(input())
+print("選択したファイルは 【 "+ SelectedFile + " 】 です。")
+CsvFile = str(SelectedFile)
 
 #風量AirVolume[m3/hr]の値入力
 print("風量[m3/hr]を入力してください。")
 AirVolume = int(input())
 
 #補足情報の入力
-print("補足情報を入力してください。!!英語入力のみ有効!!　例：Cooling Mode When StartUp EA FAN 20Hz")
+print("補足情報を入力してください。!!英語入力のみ有効!! 例：Cooling Mode When StartUp EA FAN 20Hz")
 ComplementaryInfo = str(input())
 
 #data instance
-os.chdir("./data")
 df = pd.read_csv(CsvFile)
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
