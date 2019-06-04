@@ -501,4 +501,4 @@ fig_hxe.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__hxe_
 fig_temp.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__temp_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 
 #グラフ表示
-plt.show()
+#plt.show()

@@ -6,7 +6,8 @@ from tkinter import messagebox
 
 class Application(Tk.Frame):
     def __init__(self, master=None):
-        Tk.Frame.__init__(self, master)
+        super().__init__(master)
+        self.master = master
         self.master.title("初期設定画面")
         self.master.geometry("600x200")
         self.pack()
@@ -91,79 +92,3 @@ def main ():
 # main
 if __name__ == '__main__':
     main ()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-'''
-# 参照ボタンのイベント
-# button1クリック時の処理
-def button1_clicked():
-    fTyp = [("","*")]
-    iDir = os.path.abspath(os.path.dirname(__file__))
-    FilePath = filedialog.askopenfilename(filetypes = fTyp,initialdir = iDir)
-    SelectedFilePath.set(FilePath)
-
-# button2クリック時の処理
-def button2_clicked():
-    messagebox.showinfo('FileReference Tool', u'参照ファイルは↓↓\n' + file1.get())
-
-def root():
-    root = tkinter()
-    root.title('FileReference Tool')
-    root.resizable(False, False)
-
-    # Frame1の作成
-    frame1 = ttkinter.Frame(root, padding=10)
-    frame1.grid()
-
-    # 参照ボタンの作成
-    button1 = ttkinter.Button(root, text=u'参照', command=button1_clicked)
-    button1.grid(row=0, column=3)
-
-    # ラベルの作成
-    # 「ファイル」ラベルの作成
-    s = StringVar()
-    s.set('ファイル>>')
-    label1 = ttkinter.Label(frame1, textvariable=s)
-    label1.grid(row=0, column=0)
-
-    # 参照ファイルパス表示ラベルの作成
-    file1 = StringVar()
-    file1_entry = ttkinter.Entry(frame1, textvariable=file1, width=50)
-    file1_entry.grid(row=0, column=2)
-
-    # Frame2の作成
-    frame2 = ttkinter.Frame(root, padding=(0,5))
-    frame2.grid(row=1)
-
-    # Startボタンの作成
-    button2 = ttkinter.Button(frame2, text='Start', command=button2_clicked)
-    button2.pack(side=LEFT)
-
-    # Cancelボタンの作成
-    button3 = ttkinter.Button(frame2, text='Cancel', command=quit)
-    button3.pack(side=LEFT)
-
-    root.mainloop()
-'''
