@@ -10,13 +10,14 @@ import seaborn as sns
 import glob
 import os,sys
 
+import FileReferenceClass
+
 from datetime import datetime as dt
 from WaterClass import Water
 from MoistAirClass import MoistAir
 from InstanceAirClass import InstanceAir
 
-from tkinter import *
-from tkinter import ttk
+import tkinter as Tk
 from tkinter import messagebox
 from tkinter import filedialog
 
@@ -24,39 +25,19 @@ from tkinter import filedialog
 #コンバータはインポート時にPandasによって登録されました。
 #将来のバージョンのPandasでは明示的にmatplotlibコンバータを登録する必要があります。
 from pandas.plotting import register_matplotlib_converters
+
 register_matplotlib_converters()
 
 #生データディレクトリ data をカレントディレクトリとする。
 os.chdir("./data")
-
-#tkinter によるWindowの表示
-root = Tk()
-#小さいtkinterの非表示
-root.withdraw()
-
-#ユーザーフィードバック待機
-messagebox.showinfo("Show Information", "次に開くダイアログから、解析したい csvファイル を選択してください。")
-
-#ファイル選択ダイアログを表示
-fTyp = [("","*")]
-iDir = os.path.abspath(os.path.dirname(__file__))
-FilePath = filedialog.askopenfilename(filetypes = fTyp,initialdir = iDir)
-SelectedFile = os.path.basename(FilePath)
-
-#読み込むCSVファイルの選択と入力
-print("選択したファイルは 【 "+ SelectedFile + " 】 です。")
-CsvFile = str(SelectedFile)
-
-#風量AirVolume[m3/hr]の値入力
-print("風量[m3/hr]を入力してください。")
-AirVolume = int(input())
-
-#補足情報の入力
-print("補足情報を入力してください。!!英語入力のみ有効!! 例：Cooling Mode When StartUp EA FAN 20Hz")
-ComplementaryInfo = str(input())
+#FileReferenceClass main関数にてtkinter によるWindowの表示と値の取得
+FileReference = FileReferenceClass.main()
+SelectedFile = str(FileReference[0])
+AirVolume = int(FileReference[1])
+ComplementaryInfo = str(FileReference[2])
 
 #data instance
-df = pd.read_csv(CsvFile)
+df = pd.read_csv(SelectedFile)
 
 #NaNの除外 = NaNが含まれると値Float型となってしまうため予め除外しておく
 df = df.dropna(how='all')
@@ -294,7 +275,7 @@ df["tempDiff"] = df.condTemp - df.evaTemp
 
 #最新PndasデータをCSV形式で出力
 os.chdir('../result')
-df.to_csv('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__' + CsvFile)
+df.to_csv('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__' + SelectedFile)
 
 #グラフ fig インスタンス生成（交換熱量グラフ）
 fig_heat = plt.figure(figsize=(14,8))
@@ -377,7 +358,7 @@ i_hxe = 1
 i_temp = 1
 
 #グラフタイトル名の設定
-GraghTitle = CsvFile.replace(".csv", "_")
+GraghTitle = SelectedFile.replace(".csv", "_")
 GraghTitle = GraghTitle.replace("input", "_")
 GraghTitle = 'result' + GraghTitle + '_' + str(AirVolume) +'m3/h' + '__' + ComplementaryInfo
 
@@ -513,7 +494,7 @@ plt.style.use('ggplot')
 
 #グラフをpng形式で保存 保存先resultディレクトリ
 os.chdir('../result')
-PngFile = CsvFile.replace(".csv", ".png")
+PngFile = SelectedFile.replace(".csv", ".png")
 fig_heat.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__heat_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 fig_reheat.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__reheat_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
 fig_hxe.savefig('result_' + str(AirVolume) +'m3__' + ComplementaryInfo + '__hxe_' + PngFile, transparent=False, bbox_inches='tight', dpi=400)
